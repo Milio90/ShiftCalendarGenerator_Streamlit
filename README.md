@@ -8,10 +8,10 @@ In addition, it can also extract shifts from this kind of table:
 
 ![image](https://github.com/user-attachments/assets/2a142d04-6cee-4ebc-a5c8-a32034d80e26)
 
-In addition, it can also extract on-call shifts from this kind of table:
+In addition, it can also extract on-call specialist shifts from this kind of table:
 
 ![image](https://github.com/user-attachments/assets/deeb6a3a-352f-42b6-a20d-3474dfeccc95)
 
-
+The final .ics files contain calendar events and in their description you can also see the coworkers of your shifts.
 The program tries to find the month and year from the file name if given as "... MONTH YEAR.docx"
 Unfortunately, it works only in Greek and only for .docx files.
