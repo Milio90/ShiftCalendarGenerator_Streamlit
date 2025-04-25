@@ -192,8 +192,8 @@ def parse_second_table(rows, month, year):
     
     return shifts
 
-def parse_specialty_on_call_table(rows, expected_month, expected_year):
-    """Parse the specialty on-call table format with date validation against expected month/year."""
+def parse_specialty_on_call_table(rows):
+    """Parse the specialty on-call table format with date (DD-MM-YYYY or DD/MM/YYYY) in first column."""
     shifts = []
     
     for row in rows:
@@ -207,6 +207,7 @@ def parse_specialty_on_call_table(rows, expected_month, expected_year):
             employee_name = row[2].strip() if len(row) > 2 else ""
             
             # Skip header rows or rows without proper date format
+            # Updated regex to match both DD-MM-YYYY and DD/MM/YYYY formats
             if not re.match(r"\d{1,2}[-/]\d{1,2}[-/]\d{4}", date_str):
                 continue
             
@@ -217,12 +218,6 @@ def parse_specialty_on_call_table(rows, expected_month, expected_year):
                 day, month, year = map(int, date_str.split('/'))
             else:
                 continue  # Skip if date format doesn't match either pattern
-                
-            # Check if month/year match expected values
-            if month != expected_month or year != expected_year:
-                st.warning(f"Date {date_str} doesn't match expected month/year ({expected_month}/{expected_year}). Correcting...")
-                month = expected_month
-                year = expected_year
                 
             shift_date = date(year, month, day)
             
@@ -239,6 +234,7 @@ def parse_specialty_on_call_table(rows, expected_month, expected_year):
             continue
     
     return shifts
+
 def create_calendar_for_employee(shifts, employee_name, cath_lab_shifts=None, ep_shifts=None):
     """Create an iCalendar file with all-day events for a specific employee."""
     # Filter shifts for this specific employee
@@ -506,8 +502,7 @@ def main():
                             if cath_lab_tables:
                                 cath_lab_shifts = []
                                 for table in cath_lab_tables:
-                                    # Pass month and year to the function
-                                    cath_shifts = parse_specialty_on_call_table(table, month, year)
+                                    cath_shifts = parse_specialty_on_call_table(table)
                                     for shift in cath_shifts:
                                         shift['shift_type'] = "Cath Lab On-Call"
                                     cath_lab_shifts.extend(cath_shifts)
@@ -520,8 +515,7 @@ def main():
                             if ep_tables:
                                 ep_shifts = []
                                 for table in ep_tables:
-                                    # Pass month and year to the function
-                                    electro_shifts = parse_specialty_on_call_table(table, month, year)
+                                    electro_shifts = parse_specialty_on_call_table(table)
                                     for shift in electro_shifts:
                                         shift['shift_type'] = "Electrophysiology On-Call"
                                     ep_shifts.extend(electro_shifts)
