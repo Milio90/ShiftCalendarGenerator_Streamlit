@@ -58,27 +58,54 @@ def parse_first_table(rows, month, year):
     current_year = year
     last_day = 0  # Track the last day number we've seen
     
+    # Dictionary of Greek month names to month numbers
+    greek_months = {
+        "ΙΑΝΟΥΑΡΙΟΥ": 1, "ΦΕΒΡΟΥΑΡΙΟΥ": 2, "ΜΑΡΤΙΟΥ": 3, "ΑΠΡΙΛΙΟΥ": 4,
+        "ΜΑΙΟΥ": 5, "ΙΟΥΝΙΟΥ": 6, "ΙΟΥΛΙΟΥ": 7, "ΑΥΓΟΥΣΤΟΥ": 8,
+        "ΣΕΠΤΕΜΒΡΙΟΥ": 9, "ΟΚΤΩΒΡΙΟΥ": 10, "ΝΟΕΜΒΡΙΟΥ": 11, "ΔΕΚΕΜΒΡΙΟΥ": 12,
+        "ΙΑΝΟΥΑΡΙΟΣ": 1, "ΦΕΒΡΟΥΑΡΙΟΣ": 2, "ΜΑΡΤΙΟΣ": 3, "ΑΠΡΙΛΙΟΣ": 4,
+        "ΜΑΙΟΣ": 5, "ΙΟΥΝΙΟΣ": 6, "ΙΟΥΛΙΟΣ": 7, "ΑΥΓΟΥΣΤΟΣ": 8,
+        "ΣΕΠΤΕΜΒΡΙΟΣ": 9, "ΟΚΤΩΒΡΙΟΣ": 10, "ΝΟΕΜΒΡΙΟΣ": 11, "ΔΕΚΕΜΒΡΙΟΣ": 12
+    }
+    
     for row in rows:
         if len(row) < 4:  # Ensure row has enough columns
             continue
         
         try:
-            # Extract day, month, day_of_week, and employees
+            # Extract day, month_text, day_of_week, and employees
             day = row[0].strip()
+            month_text = row[1].strip() if len(row) > 1 else ""
             day_of_week = row[2].strip() if len(row) > 2 else ""
             employees_cell = row[3].strip() if len(row) > 3 else ""
             
             # Skip header rows or rows without day number
-            if not day.isdigit():
+            if not day or not day[0].isdigit():
                 continue
             
+            # Handle special formatting like "*01**" for May 1st
+            day = day.strip("*").strip()
+            if not day.isdigit():
+                continue
+                
             day = int(day)
             
-            # Check if we've rolled over to the next month
-            # If current day is significantly less than the last day, we've likely
-            # moved to the next month
-            if day < last_day and last_day > 20 and day < 10:
-                # Move to next month
+            # Check for explicit month name in the month_text field
+            found_month = None
+            for greek_month, month_num in greek_months.items():
+                if greek_month in month_text:
+                    found_month = month_num
+                    break
+            
+            if found_month is not None:
+                # Use explicitly mentioned month
+                current_month = found_month
+                # If the new month is less than the original month, we've moved to next year
+                if current_month < month and month > 10 and current_month < 3:
+                    current_year += 1
+                st.info(f"Explicit month found: now processing {current_month}/{current_year}")
+            elif day < last_day and last_day > 20 and day < 10:
+                # Move to next month based on day number patterns
                 current_month += 1
                 if current_month > 12:
                     current_month = 1
@@ -119,29 +146,56 @@ def parse_second_table(rows, month, year):
     current_year = year
     last_day = 0  # Track the last day number we've seen
     
+    # Dictionary of Greek month names to month numbers
+    greek_months = {
+        "ΙΑΝΟΥΑΡΙΟΥ": 1, "ΦΕΒΡΟΥΑΡΙΟΥ": 2, "ΜΑΡΤΙΟΥ": 3, "ΑΠΡΙΛΙΟΥ": 4,
+        "ΜΑΙΟΥ": 5, "ΙΟΥΝΙΟΥ": 6, "ΙΟΥΛΙΟΥ": 7, "ΑΥΓΟΥΣΤΟΥ": 8,
+        "ΣΕΠΤΕΜΒΡΙΟΥ": 9, "ΟΚΤΩΒΡΙΟΥ": 10, "ΝΟΕΜΒΡΙΟΥ": 11, "ΔΕΚΕΜΒΡΙΟΥ": 12,
+        "ΙΑΝΟΥΑΡΙΟΣ": 1, "ΦΕΒΡΟΥΑΡΙΟΣ": 2, "ΜΑΡΤΙΟΣ": 3, "ΑΠΡΙΛΙΟΣ": 4,
+        "ΜΑΙΟΣ": 5, "ΙΟΥΝΙΟΣ": 6, "ΙΟΥΛΙΟΣ": 7, "ΑΥΓΟΥΣΤΟΣ": 8,
+        "ΣΕΠΤΕΜΒΡΙΟΣ": 9, "ΟΚΤΩΒΡΙΟΣ": 10, "ΝΟΕΜΒΡΙΟΣ": 11, "ΔΕΚΕΜΒΡΙΟΣ": 12
+    }
+    
     for row in rows:
         if len(row) < 6:  # Ensure row has enough columns for second table format
             continue
         
         try:
-            # Extract day, month, day_of_week, and employees from different shifts
+            # Extract day, month_text, day_of_week, and employees from different shifts
             day = row[0].strip()
+            month_text = row[1].strip() if len(row) > 1 else ""
             day_of_week = row[2].strip() if len(row) > 2 else ""
             megali_shift = row[3].strip() if len(row) > 3 else ""
             mikri_shift = row[4].strip() if len(row) > 4 else ""
             tep_shift = row[5].strip() if len(row) > 5 else ""
             
             # Skip header rows or rows without day number
-            if not day.isdigit():
+            if not day or not day[0].isdigit():
                 continue
             
+            # Handle special formatting like "*01**" for May 1st
+            day = day.strip("*").strip()
+            if not day.isdigit():
+                continue
+                
             day = int(day)
             
-            # Check if we've rolled over to the next month
-            # If current day is significantly less than the last day, we've likely
-            # moved to the next month
-            if day < last_day and last_day > 20 and day < 10:
-                # Move to next month
+            # Check for explicit month name in the month_text field
+            found_month = None
+            for greek_month, month_num in greek_months.items():
+                if greek_month in month_text:
+                    found_month = month_num
+                    break
+            
+            if found_month is not None:
+                # Use explicitly mentioned month
+                current_month = found_month
+                # If the new month is less than the original month, we've moved to next year
+                if current_month < month and month > 10 and current_month < 3:
+                    current_year += 1
+                st.info(f"Explicit month found: now processing {current_month}/{current_year}")
+            elif day < last_day and last_day > 20 and day < 10:
+                # Move to next month based on day number patterns
                 current_month += 1
                 if current_month > 12:
                     current_month = 1
@@ -191,7 +245,7 @@ def parse_second_table(rows, month, year):
             continue
     
     return shifts
-
+    
 def parse_specialty_on_call_table(rows):
     """Parse the specialty on-call table format with date (DD-MM-YYYY or DD/MM/YYYY) in first column."""
     shifts = []
